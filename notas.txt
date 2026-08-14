@@ -1,0 +1,37 @@
+
+Dados diarios desde 5 de janeiro de 2000
+N = 78 acoes do indice ibovespa ( usar todas? ) -> maior percentual [20 maiores]
+Output: N + 1 ( reserva em dinheiro? )
+
+Treino: 1 ano civil ( 252 dias ) [ 126, 504 ]
+Teste: 1 - 20 semanas (5 a 100 dias)
+Step: 1 semana (5 dias)
+
+Algoritmos: DQN, Rainbow, PPO, PPO-LSTM, A2C
+Convolutional --> Testar depois
+
+Input 10 dias
+Dados:
+- OHLCV ( mainly close )
+- Tendencia e momento: MACD (Moving Average Convergence Divergence), RSI (Relative Strength Index), CCI (Commodity Channel Index), ADX (Average Directional Index) e Médias Móveis Exponenciais (EMA)
+- Volume e Volatilidade: OBV (On-Balance Volume), Bollinger Bands, VPT (Volume Price Trend) e índice de Turbulência Financeira
+- Dados Corporativos: Divulgações trimestrais contendo receita, lucro líquido, lucro por ação (EPS) e despesas operacionais
+- Sentimento de Mercado: UMCSENT
+- Variáveis Macroeconômicas: Taxas de juros, inflação, crescimento do PIB, pedidos iniciais de auxílio-desemprego (ICSA), taxa de desemprego (UNRATE) e spreads de títulos corporativos de alto rendimento (HYBS)
+
+Normalizacao: 
+- Dividir serie temporal pelo mais recente (possibilidade de numeros maiores de 1) 
+- Dividir serie temporal pelo maior valor historico ate aquela data
+nao se aplica
+
+Taxas:
+- Nao preocupar com as Taxas
+
+Reward:
+- Retorno logaritmico -> Por que usar e nao usar o percentual
+- Differential Sharpe Ratio ( baseline (selic)? )
+- Maximum Drawdown (MDD) Penalty
+- Retorno conhecido / logaritmico em live
+
+Tem alguma forma de medir quais features de input sao mais importantes em uma rede neural? 
+Random Forest e Xgboost ( Feature importance )
