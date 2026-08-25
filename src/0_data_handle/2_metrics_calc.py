@@ -11,14 +11,11 @@ feature_strategy = ta.Strategy(
         {"kind": "roc"}, {"kind": "rocp"}, {"kind": "mom"},
         {"kind": "tsi"}, {"kind": "ppo"}, {"kind": "kst"},
         {"kind": "coppock"}, {"kind": "stochf"},
-        # {"kind": "trix"}, {"kind": "uo"}, {"kind": "cmo"}, {"kind": "cci"}, {"kind": "willr"},
 
         # Trend (15) ==================================================
         {"kind": "adx"}, {"kind": "adxr"}, {"kind": "amat"},
         {"kind": "dx"}, {"kind": "vortex"}, {"kind": "vhf"},
         {"kind": "pmax"}, {"kind": "ttm_trend"}, {"kind": "qstick"},
-        # {"kind": "chop"}, {"kind": "psar"}, {"kind": "supertrend"}
-        # {"kind": "aroon"}, {"kind": "dpo"},
 
         # Volatility (15) ==================================================
         {"kind": "atr"}, {"kind": "natr"}, {"kind": "bbands"},
@@ -26,14 +23,10 @@ feature_strategy = ta.Strategy(
         {"kind": "massi"}, {"kind": "thermo"}, {"kind": "true_range"},
         {"kind": "pdist"}, {"kind": "aberration"}, {"kind": "rvi"},
         {"kind": "kc"},
-        # {"kind": "cvi"},
 
         # Volume (15) ==================================================
         {"kind": "obv"}, {"kind": "ad"}, {"kind": "adosc"},
         {"kind": "efi"}, {"kind": "pvt"}, {"kind": "wad"},
-        # {"kind": "mfi"}, {"kind": "cmf"}, {"kind": "kvo"},
-        # {"kind": "vfi"}, {"kind": "nvi"}, {"kind": "pvi"},
-        # {"kind": "eom"}, {"kind": "vosc"},
 
         # Moving Averages (15) ==================================================
         {"kind": "sma"}, {"kind": "ema"}, {"kind": "wma"},
@@ -41,12 +34,10 @@ feature_strategy = ta.Strategy(
         {"kind": "alma"}, {"kind": "t3"}, {"kind": "trima"},
         {"kind": "linreg"}, {"kind": "tsf"}, {"kind": "zlma"},
         {"kind": "hma"}, {"kind": "mama"},
-        # {"kind": "vidya"},
 
         # Statistics (10) ==================================================
         {"kind": "stdev"}, {"kind": "variance"}, {"kind": "mad"},
         {"kind": "quantile"}, {"kind": "median"},
-        # {"kind": "entropy"},  {"kind": "skew"}, {"kind": "kurtosis"}, {"kind": "zscore"},
 
         # Performance (3)
         {"kind": "percent_return"}, {"kind": "log_return"}, {"kind": "drawdown"},
@@ -56,7 +47,7 @@ feature_strategy = ta.Strategy(
 def process_tickers():
     tickers = []
     try:
-        with open("_SETTINGS/top-20.json", "r") as f:
+        with open("_SETTINGS/top-10-full.json", "r") as f:
             tickers = json.load(f)
     except FileNotFoundError:
         print("Arquivo 'indexes.json' não encontrado.")
