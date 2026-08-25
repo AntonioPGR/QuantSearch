@@ -59,55 +59,5 @@ for cor in CORRELATIONS:
 # 	graph.iloc[range(len(STOCKS)), range(len(STOCKS))] = 0.0
 # 	graph.to_csv(f"2_FinancialNetworks/_DATA/correlations/{cor}_graph.csv")
 
-for cor in CORRELATIONS:
-	correlation = correlations[cor]
-	edges = []
-	
-	for i in range(len(STOCKS)):
-		for j in range(i + 1, len(STOCKS)):
-			rho = correlation.iloc[i, j]
-			distance = np.sqrt(2 * (1 - rho))
-			edges.append((distance, i, j, rho))
-			
-	edges.sort(key=lambda x: x[0])
-	parent = list(range(len(STOCKS)))
-	rank = [0] * len(STOCKS)
-	
-	def find(x):
-		if parent[x] != x:
-			parent[x] = find(parent[x])
-		return parent[x]
-	
-	def union(x, y):
-		x = find(x)
-		y = find(y)
-		if x == y:
-			return False
-		if rank[x] < rank[y]:
-			parent[x] = y
-		elif rank[x] > rank[y]:
-			parent[y] = x
-		else:
-			parent[y] = x
-			rank[x] += 1
-		return True
-	
-	mst = pd.DataFrame(
-		0.0,
-		index=STOCKS,
-		columns=STOCKS
-	)
-	
-	edges_added = 0
-	for distance, i, j, rho in edges:
-		if union(i, j):
-			stock1 = STOCKS[i]
-			stock2 = STOCKS[j]
-			mst.loc[stock1, stock2] = np.sign(rho)
-			mst.loc[stock2, stock1] = np.sign(rho)
-			edges_added += 1
-			if edges_added == len(STOCKS) - 1:
-				break
-	
-	mst.to_csv(f"2_FinancialNetworks/_DATA/correlations/{cor}_mst.csv")
+
 
