@@ -39,25 +39,6 @@ for stock in STOCKS:
 for cor in CORRELATIONS:
 	correlations[f"{cor}"].to_csv(f"2_FinancialNetworks/_DATA/correlations/{cor}.csv")
 
-# DAG
-# for cor in CORRELATIONS:
-# 	mask = np.triu(np.ones(correlations[cor].shape, dtype=bool),k=1)
-# 	values = correlations[cor].to_numpy()[mask]
-# 	absolute_values = np.abs(values)
-# 	length = len(STOCKS)
-# 	n = int(length * (length - 1) / 8)
-# 	nth_index = np.argpartition(absolute_values, -n)[-n]
-# 	threshold = absolute_values[nth_index]
-# 	graph = correlations[cor].where((correlations[cor].abs() >= threshold) & (correlations[cor] != 1), 0.0)
-# 	graph.to_csv(f"2_FinancialNetworks/_DATA/correlations/{cor}_graph.csv")
-	
-# DTN
-# for cor in CORRELATIONS:
-# 	threshold = 0.65
-# 	graph = correlations[cor].where(correlations[cor].abs() >= threshold, 0.0)
-# 	graph = np.sign(graph)
-# 	graph.iloc[range(len(STOCKS)), range(len(STOCKS))] = 0.0
-# 	graph.to_csv(f"2_FinancialNetworks/_DATA/correlations/{cor}_graph.csv")
 
 
 
