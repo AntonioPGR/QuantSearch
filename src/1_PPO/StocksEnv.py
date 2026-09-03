@@ -6,7 +6,6 @@ from Config import Config
 
 
 class StocksEnv:
-
     data_dir = Path(Config.DATA_DIR)
     stocks = Config.STOCKS
     price_cols = Config.PRICE_COLUMNS

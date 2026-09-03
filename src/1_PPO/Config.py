@@ -6,7 +6,6 @@ class Config:
     # DIRECTORIES
     DATA_DIR = "_DATA/featured/"
 
-
     # STOCKS
     STOCKS = ['VALE3', 'PETR4', 'AXIA3', 'PETR3', 'ITSA4', 'SBSP3', 'WEGE3', 'EMBJ3', 'CPLE3', 'GGBR4']
     PRICE_COLUMNS = ["Open", "High", "Low", "Close", "Volume"]
