@@ -13,7 +13,7 @@ OBS_LEN = 50
 DATA_DIR = "data"
 
 # ENV =================================
-class NetworkTradingEnv(gym.Env):
+class Teste(gym.Env):
 
   metadata = {"render_modes": []}
 
