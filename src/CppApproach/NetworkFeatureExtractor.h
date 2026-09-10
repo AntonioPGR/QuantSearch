@@ -1,0 +1,13 @@
+//
+// Created by antoniopgr on 9/10/26.
+//
+
+#ifndef QUANTSEARCH_NETWORKFEATUREEXTRACTOR_H
+#define QUANTSEARCH_NETWORKFEATUREEXTRACTOR_H
+
+
+class NetworkFeatureExtractor {
+};
+
+
+#endif //QUANTSEARCH_NETWORKFEATUREEXTRACTOR_H

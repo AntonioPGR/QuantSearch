@@ -1,0 +1,13 @@
+//
+// Created by antoniopgr on 9/10/26.
+//
+
+#ifndef QUANTSEARCH_CONVOLUTIONALFEATUREEXTRACTOR_H
+#define QUANTSEARCH_CONVOLUTIONALFEATUREEXTRACTOR_H
+
+
+class ConvolutionalFeatureExtractor {
+};
+
+
+#endif //QUANTSEARCH_CONVOLUTIONALFEATUREEXTRACTOR_H
