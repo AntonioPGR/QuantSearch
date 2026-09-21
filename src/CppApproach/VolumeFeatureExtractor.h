@@ -1,0 +1,13 @@
+//
+// Created by antoniopgr on 9/10/26.
+//
+
+#ifndef QUANTSEARCH_PRICEFEATUREEXTRACTOR_H
+#define QUANTSEARCH_PRICEFEATUREEXTRACTOR_H
+
+
+class PriceFeatureExtractor {
+};
+
+
+#endif //QUANTSEARCH_PRICEFEATUREEXTRACTOR_H
