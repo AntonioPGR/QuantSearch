@@ -13,15 +13,24 @@ using namespace std;
 
 class TradingEnv {
 	public:
-		TradingEnv(float train_percent){
+		static constexpr double BANKRUPTCY_REWARD = -1.0;
+
+		TradingEnv(int train_days, int test_days){
 			loadData();
 			total_of_days = closes.size();
-			test_days = round(total_of_days * train_percent);
-			reset();
+			window_train_days = train_days;
+			window_test_days = test_days;
+			reset(0, window_train_days);
 		}
 
 		void reset() {
-			current_step = OBS_LEN - 1;
+			reset(window_start, window_end);
+		}
+
+		void reset(int start_day, int end_day) {
+			window_start = max(0, start_day);
+			window_end = min(static_cast<int>(total_of_days), end_day);
+			current_step = max(OBS_LEN - 1, window_start - 1);
 			cash_portfolio = calculateInitialCashPortfolio();
 			stock_portfolio = calculateStockPortfolioByCashPortfolio();
 			percent_portfolio = calculatePercentPortfolioByCashPortfolio();
@@ -29,6 +38,8 @@ class TradingEnv {
 
 		// Mercado fecha -> Recompensa -> observação -> ação -> próximo dia -> Mercado fecha -> Recompensa -> observação
 		double step(vector<double>& action){
+		if (terminated()) return BANKRUPTCY_REWARD;
+
 			percent_portfolio = action;
 			cash_portfolio = calculateCashPortfolioByPercentPortfolio();
 			stock_portfolio = calculateStockPortfolioByCashPortfolio();
@@ -39,6 +50,10 @@ class TradingEnv {
 			cash_portfolio = calculateCashPortfolioByStockPortfolio();
 			percent_portfolio = calculatePercentPortfolioByCashPortfolio();
 			const double new_cash = calculateTotalCash();
+			if (!isfinite(new_cash) || new_cash <= 0.0) {
+				cash_portfolio.assign(stocks_amount, 0.0);
+				return BANKRUPTCY_REWARD;
+			}
 
 			return std::log2(new_cash / old_cash);
 		}
@@ -72,12 +87,25 @@ class TradingEnv {
 		};
 
 		bool terminated(){
-			return current_step >= total_of_days;
+			return current_step >= window_end - 1;
 		};
 
 		bool train_terminated(){
-			return current_step >= test_days;
+			return terminated();
 		};
+
+		bool has_days_remaining() const {
+			return window_end > window_start + OBS_LEN;
+		}
+
+		double portfolio_value() const {
+			double total = 0.0;
+			for (double value : cash_portfolio) total += value;
+			return total;
+		}
+
+		int first_usable_day() const { return OBS_LEN - 1; }
+		int total_days() const { return static_cast<int>(total_of_days); }
 
 	private:
 		int CLOSE_COL = 1;
@@ -88,7 +116,10 @@ class TradingEnv {
 		int stocks_amount = 0;
 		int current_step = 0;
 		unsigned long total_of_days = 0;
-		int test_days = 0;
+		int window_train_days = 0;
+		int window_test_days = 0;
+		int window_start = 0;
+		int window_end = 0;
 		double initial_cash = 10000;
 		vector<double> cash_portfolio;
 		vector<double> stock_portfolio;

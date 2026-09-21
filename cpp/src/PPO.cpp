@@ -77,6 +77,8 @@ struct PPOStats {
 // One full PPO update: several epochs of shuffled minibatches over the rollout.
 inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
                            const RolloutBuffer& buf, const PPOConfig& cfg) {
+  if (buf.size() == 0) return {};
+
   auto obs          = buf.obs();
   auto actions      = buf.actions();
   auto old_log_prob = buf.log_probs().detach();
@@ -84,7 +86,8 @@ inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
   auto advantages   = buf.advantages().detach();
 
   // Normalising advantages is what keeps the clipped objective well scaled.
-  advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8);
+  auto advantage_std = advantages.numel() > 1 ? advantages.std() : torch::ones({});
+  advantages = (advantages - advantages.mean()) / (advantage_std + 1e-8);
 
   const int64_t N = buf.size();
   PPOStats stats;

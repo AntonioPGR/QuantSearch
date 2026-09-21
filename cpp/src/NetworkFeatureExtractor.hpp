@@ -88,7 +88,7 @@ class NetworkFeatureExtractor {
 				// 5. Node Betweenness
 				res[v][4] = betweenness;
 				// 6. Node Closeness
-				res[v][5] = (sum_dist > 0) ? (n - 1) / sum_dist : 0.0; /
+				res[v][5] = (sum_dist > 0) ? (n - 1) / sum_dist : 0.0; 
 			}
 
 			// 7. Node Eigenvector

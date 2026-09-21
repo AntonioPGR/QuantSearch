@@ -11,11 +11,11 @@ find_package(Torch REQUIRED)
 
 add_executable(QuantSearch
         src/main.cpp
-        src/NetworkFeatureExtractor.h
-        src/Printer.h
-        src/TradingEnv.h
-        src/AgentImp.cpp
+        src/NetworkBuilder.hpp
+        src/NetworkFeatureExtractor.hpp
+        src/TradingEnv.hpp
         src/PPO.cpp
+        src/agent.hpp
 )
 
 target_include_directories(QuantSearch PRIVATE
