@@ -107,6 +107,10 @@ class TradingEnv {
 		int first_usable_day() const { return OBS_LEN - 1; }
 		int total_days() const { return static_cast<int>(total_of_days); }
 
+		void setStep(int step) {
+			this->current_step = step;
+		}
+
 	private:
 		int CLOSE_COL = 1;
 		int VOLUME_COL = 5;
