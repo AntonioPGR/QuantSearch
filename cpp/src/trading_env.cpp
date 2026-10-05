@@ -1,11 +1,9 @@
-#pragma once
-#ifndef QUANTSEARCH_TRADINGENV_H
-#define QUANTSEARCH_TRADINGENV_H
-
 #include <cmath>
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -27,10 +25,11 @@ class TradingEnv {
 			reset(window_start, window_end);
 		}
 
-		void reset(int start_day, int end_day) {
+		void reset(int start_day, int end_day, double starting_cash = 10000.0) {
 			window_start = max(0, start_day);
 			window_end = min(static_cast<int>(total_of_days), end_day);
 			current_step = max(OBS_LEN - 1, window_start - 1);
+			initial_cash = starting_cash;
 			cash_portfolio = calculateInitialCashPortfolio();
 			stock_portfolio = calculateStockPortfolioByCashPortfolio();
 			percent_portfolio = calculatePercentPortfolioByCashPortfolio();
@@ -40,7 +39,15 @@ class TradingEnv {
 		double step(vector<double>& action){
 		if (terminated()) return BANKRUPTCY_REWARD;
 
+			if (action.size() != static_cast<size_t>(stocks_amount)) return BANKRUPTCY_REWARD;
+			double weight_sum = 0.0;
+			for (double weight : action) {
+				if (!isfinite(weight) || weight < 0.0) return BANKRUPTCY_REWARD;
+				weight_sum += weight;
+			}
+			if (weight_sum <= 0.0) return BANKRUPTCY_REWARD;
 			percent_portfolio = action;
+			for (double& weight : percent_portfolio) weight /= weight_sum;
 			cash_portfolio = calculateCashPortfolioByPercentPortfolio();
 			stock_portfolio = calculateStockPortfolioByCashPortfolio();
 			const double old_cash = calculateTotalCash();
@@ -86,6 +93,17 @@ class TradingEnv {
 			return calculatePercentPortfolioByCashPortfolio();
 		};
 
+		const vector<string>& getStockNames() const { return stock_names; }
+		const string& getCurrentDate() const { return dates[current_step]; }
+
+		vector<double> getNextStepReturns() const {
+			vector<double> returns(stocks_amount);
+			for (int stock = 0; stock < stocks_amount; ++stock) {
+				returns[stock] = closes[current_step + 1][stock] / closes[current_step][stock] - 1.0;
+			}
+			return returns;
+		}
+
 		bool terminated(){
 			return current_step >= window_end - 1;
 		};
@@ -111,7 +129,7 @@ class TradingEnv {
 		int CLOSE_COL = 1;
 		int VOLUME_COL = 5;
 		int OBS_LEN = 50;
-		string DATA_DIR = "../data";
+		string DATA_DIR = "_data";
 
 		int stocks_amount = 0;
 		int current_step = 0;
@@ -126,15 +144,28 @@ class TradingEnv {
 		vector<double> percent_portfolio;
 		vector<vector<double>> closes;
 		vector<vector<double>> volumes;
+		vector<string> dates;
+		vector<string> stock_names;
 
 		void loadData(){
 			closes.clear();
 			volumes.clear();
+			dates.clear();
+			stock_names.clear();
+			if (!std::filesystem::is_directory(DATA_DIR) && std::filesystem::is_directory("../_data")) {
+				DATA_DIR = "../_data";
+			} else if (!std::filesystem::is_directory(DATA_DIR) && std::filesystem::is_directory("../data")) {
+				DATA_DIR = "../data";
+			}
+			if (!std::filesystem::is_directory(DATA_DIR)) {
+				throw std::runtime_error("Could not find market data directory _data/ or ../_data/");
+			}
 			// FOR STOCK IN DIR
 			stocks_amount = 0;
 			for (const auto& entry : std::filesystem::directory_iterator(DATA_DIR)) {
 				if (!entry.is_regular_file() || entry.path().extension() != ".csv") continue;
 				std::ifstream file(entry.path().string());
+				stock_names.push_back(entry.path().stem().string());
 				// FOR LINE IN CSV
 				std::string line, value;
 				std::vector<std::string> values;
@@ -150,6 +181,7 @@ class TradingEnv {
 					if (step_idx >= closes.size()) {
 						closes.emplace_back();
 						volumes.emplace_back();
+						if (stocks_amount == 0) dates.emplace_back();
 					}
 					if (stocks_amount >= closes[step_idx].size()) {
 						closes[step_idx].resize(stocks_amount + 1);
@@ -157,6 +189,7 @@ class TradingEnv {
 					}
 					closes[step_idx][stocks_amount] = std::stod(values[CLOSE_COL]);
 					volumes[step_idx][stocks_amount] = std::stod(values[VOLUME_COL]);
+					if (stocks_amount == 0) dates[step_idx] = values[0];
 					step_idx++;
 				}
 				stocks_amount++;
@@ -212,7 +245,5 @@ class TradingEnv {
 			}
 			return total;
 		};
-		
 };
 
-#endif // QUANTSEARCH_TRADINGENV_H

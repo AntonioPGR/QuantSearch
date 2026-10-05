@@ -1,11 +1,14 @@
-#pragma once
 #include <torch/torch.h>
 #include <vector>
-#include "agent.hpp"
+#include "agent.cpp"
+
+using namespace std;
+using namespace torch;
+using namespace torch::nn::utils;
 
 struct PPOConfig {
   int64_t rollout_steps  = 2048;
-  int64_t epochs         = 10;
+  int64_t epochs         = 5;
   int64_t minibatch_size = 64;
   double  gamma          = 0.99;
   double  lambda         = 0.95;
@@ -14,14 +17,12 @@ struct PPOConfig {
   double  entropy_coef   = 0.01;
   double  max_grad_norm  = 0.5;
   double  learning_rate  = 3e-4;
+  double  weight_decay   = 1e-4;
 };
 
-// Stores one rollout, then flattens it into tensors for the update.
 class RolloutBuffer {
  public:
-  void add(const Observation& obs, const torch::Tensor& action,
-           const torch::Tensor& log_prob, const torch::Tensor& value,
-           float reward, bool done) {
+  void add(const Observation& obs, const Tensor& action, const Tensor& log_prob, const Tensor& value, float reward, bool done) {
     obs_.push_back(obs);
     actions_.push_back(action);
     log_probs_.push_back(log_prob);
@@ -46,28 +47,27 @@ class RolloutBuffer {
 
     for (int64_t t = T - 1; t >= 0; --t) {
       float next_value    = (t == T - 1) ? last_value : values_[t + 1].item<float>();
-      float next_non_term = (t == T - 1) ? (last_done ? 0.0f : 1.0f)
-                                         : (1.0f - dones_[t]);
+      float next_non_term = (t == T - 1) ? (last_done ? 0.0f : 1.0f) : (1.0f - dones_[t]);
       float v     = values_[t].item<float>();
       float delta = rewards_[t] + static_cast<float>(gamma) * next_value * next_non_term - v;
-      gae         = delta + static_cast<float>(gamma * lambda) * next_non_term * gae;
+      gae = delta + static_cast<float>(gamma * lambda) * next_non_term * gae;
       advantages_[t] = gae;
     }
     returns_ = advantages_ + flat_values();
   }
 
-  Observation     obs()        const { return Observation::stack(obs_); }
-  torch::Tensor   actions()    const { return torch::cat(actions_, 0); }
-  torch::Tensor   log_probs()  const { return torch::cat(log_probs_, 0); }
-  torch::Tensor   flat_values()const { return torch::cat(values_, 0); }
-  torch::Tensor   advantages() const { return advantages_; }
-  torch::Tensor   returns()    const { return returns_; }
+  Observation obs() const { return Observation::stack(obs_); }
+  Tensor actions()    const { return cat(actions_, 0); }
+  Tensor log_probs()  const { return cat(log_probs_, 0); }
+  Tensor flat_values()const { return cat(values_, 0); }
+  Tensor advantages() const { return advantages_; }
+  Tensor returns()    const { return returns_; }
 
  private:
-  std::vector<Observation>   obs_;
-  std::vector<torch::Tensor> actions_, log_probs_, values_;
-  std::vector<float>         rewards_, dones_;
-  torch::Tensor              advantages_, returns_;
+  vector<Observation> obs_;
+  vector<Tensor> actions_, log_probs_, values_;
+  vector<float>         rewards_, dones_;
+  Tensor              advantages_, returns_;
 };
 
 struct PPOStats {
@@ -75,7 +75,7 @@ struct PPOStats {
 };
 
 // One full PPO update: several epochs of shuffled minibatches over the rollout.
-inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
+inline PPOStats ppo_update(Agent& agent, optim::Optimizer& optimizer,
                            const RolloutBuffer& buf, const PPOConfig& cfg) {
   if (buf.size() == 0) return {};
 
@@ -86,7 +86,7 @@ inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
   auto advantages   = buf.advantages().detach();
 
   // Normalising advantages is what keeps the clipped objective well scaled.
-  auto advantage_std = advantages.numel() > 1 ? advantages.std() : torch::ones({});
+  auto advantage_std = advantages.numel() > 1 ? advantages.std() : torch::ones({}, advantages.options());
   advantages = (advantages - advantages.mean()) / (advantage_std + 1e-8);
 
   const int64_t N = buf.size();
@@ -94,10 +94,10 @@ inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
   int64_t n_updates = 0;
 
   for (int64_t epoch = 0; epoch < cfg.epochs; ++epoch) {
-    auto perm = torch::randperm(N, torch::kInt64);
+    auto perm = torch::randperm(N, kInt64);
 
     for (int64_t start = 0; start < N; start += cfg.minibatch_size) {
-      auto idx = perm.slice(0, start, std::min(start + cfg.minibatch_size, N));
+      auto idx = perm.slice(0, start, min(start + cfg.minibatch_size, N));
 
       auto mb_obs = obs.index(idx);
       auto mb_act = actions.index_select(0, idx);
@@ -111,9 +111,9 @@ inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
       auto ratio = (log_prob - mb_old).exp();
       auto surr1 = ratio * mb_adv;
       auto surr2 = ratio.clamp(1.0 - cfg.clip_range, 1.0 + cfg.clip_range) * mb_adv;
-      auto policy_loss = -torch::min(surr1, surr2).mean();
+      auto policy_loss = -min(surr1, surr2).mean();
 
-      auto value_loss   = torch::mse_loss(value, mb_ret);
+      auto value_loss   = mse_loss(value, mb_ret);
       auto entropy_loss = -entropy.mean();
 
       auto loss = policy_loss
@@ -122,11 +122,11 @@ inline PPOStats ppo_update(Agent& agent, torch::optim::Optimizer& optimizer,
 
       optimizer.zero_grad();
       loss.backward();
-      torch::nn::utils::clip_grad_norm_(agent->parameters(), cfg.max_grad_norm);
+      clip_grad_norm_(agent->parameters(), cfg.max_grad_norm);
       optimizer.step();
 
       {
-        torch::NoGradGuard ng;
+        NoGradGuard ng;
         stats.policy_loss += policy_loss.item<float>();
         stats.value_loss  += value_loss.item<float>();
         stats.entropy     += entropy.mean().item<float>();

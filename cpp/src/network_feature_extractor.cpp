@@ -1,7 +1,3 @@
-#pragma once
-#ifndef QUANTSEARCH_NETWORKFEATUREEXTRACTOR_H
-#define QUANTSEARCH_NETWORKFEATUREEXTRACTOR_H
-
 #include <vector>
 #include <cmath>
 #include <algorithm>
@@ -236,4 +232,3 @@ class NetworkFeatureExtractor {
 		}
 };
 
-#endif //QUANTSEARCH_NETWORKFEATUREEXTRACTOR_H

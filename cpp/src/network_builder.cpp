@@ -1,7 +1,3 @@
-#pragma once
-#ifndef QUANTSEARCH_NETWORKBUILDER_H
-#define QUANTSEARCH_NETWORKBUILDER_H
-
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -80,5 +76,3 @@ class NetworkBuilder {
 		};
 
 };
-
-#endif //QUANTSEARCH_NETWORKBUILDER_H
