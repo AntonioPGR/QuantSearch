@@ -104,6 +104,22 @@ class TradingEnv {
 			return returns;
 		}
 
+		size_t getBestPerformingStock(int start_day, int end_day) const {
+			if (stocks_amount == 0 || start_day < 0 || end_day <= start_day || end_day > static_cast<int>(total_of_days)) {
+				throw std::out_of_range("Invalid range for baseline stock selection");
+			}
+			size_t best_stock = 0;
+			double best_return = closes[end_day - 1][0] / closes[start_day][0] - 1.0;
+			for (int stock = 1; stock < stocks_amount; ++stock) {
+				const double stock_return = closes[end_day - 1][stock] / closes[start_day][stock] - 1.0;
+				if (stock_return > best_return) {
+					best_return = stock_return;
+					best_stock = static_cast<size_t>(stock);
+				}
+			}
+			return best_stock;
+		}
+
 		bool terminated(){
 			return current_step >= window_end - 1;
 		};

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <streambuf>
 #include <stdexcept>
 #include <vector>
 
@@ -57,16 +58,42 @@ Observation make_observation(TradingEnv& env, NetworkBuilder& builder) {
 
 struct TrainingConfig {
 	static constexpr int TRAIN_DAYS = 3 * 252;
-	static constexpr int TEST_DAYS = 126;
+	static constexpr int TEST_DAYS = 252;
 	static constexpr int EPISODES_PER_WINDOW = 8;
 };
 
-struct TestResult {
-	double policy_money;
-	double baseline_money;
+class TeeBuffer : public streambuf {
+public:
+	TeeBuffer(streambuf* terminal_buffer, streambuf* log_buffer)
+		: terminal_buffer_(terminal_buffer), log_buffer_(log_buffer) {}
+
+protected:
+	int_type overflow(int_type character) override {
+		if (traits_type::eq_int_type(character, traits_type::eof())) return traits_type::not_eof(character);
+		const auto terminal_result = terminal_buffer_->sputc(traits_type::to_char_type(character));
+		const auto log_result = log_buffer_->sputc(traits_type::to_char_type(character));
+		return traits_type::eq_int_type(terminal_result, traits_type::eof()) || traits_type::eq_int_type(log_result, traits_type::eof())
+			? traits_type::eof() : character;
+	}
+
+	streamsize xsputn(const char* text, streamsize count) override {
+		const streamsize terminal_count = terminal_buffer_->sputn(text, count);
+		const streamsize log_count = log_buffer_->sputn(text, count);
+		return min(terminal_count, log_count);
+	}
+
+	int sync() override {
+		const int terminal_result = terminal_buffer_->pubsync();
+		const int log_result = log_buffer_->pubsync();
+		return terminal_result == 0 && log_result == 0 ? 0 : -1;
+	}
+
+private:
+	streambuf* terminal_buffer_;
+	streambuf* log_buffer_;
 };
 
-void train_window(TradingEnv& env, Agent& policy, optim::Adam& optimizer, NetworkBuilder& network_builder, const PPOConfig& ppo_config, int start_day, int end_day, ofstream& training_log) {
+void train_window(TradingEnv& env, Agent& policy, optim::Adam& optimizer, NetworkBuilder& network_builder, const PPOConfig& ppo_config, int start_day, int end_day) {
 	for (int episode = 0; episode < TrainingConfig::EPISODES_PER_WINDOW; ++episode) {
 		env.reset(start_day, end_day);
 		RolloutBuffer rollout;
@@ -86,30 +113,27 @@ void train_window(TradingEnv& env, Agent& policy, optim::Adam& optimizer, Networ
 
 		rollout.compute_gae(ppo_config.gamma, ppo_config.lambda, 0.0f, true);
 		const auto stats = ppo_update(policy, optimizer, rollout, ppo_config);
-		training_log << "train," << start_day << ',' << end_day << ',' << episode + 1 << ','
-		             << stats.policy_loss << ',' << stats.value_loss << ',' << stats.entropy << ','
-		             << stats.approx_kl << ",,,,\n";
 		cout << "train_window=" << start_day << ':' << end_day << " episode=" << episode + 1 << " policy_loss=" << stats.policy_loss << " value_loss=" << stats.value_loss << '\n';
 	}
 }
 
-TestResult test_window(TradingEnv& env, Agent& policy, NetworkBuilder& network_builder, int start_day, int end_day, double starting_money, double baseline_starting_money, ofstream& result_csv, ofstream& training_log) {
+void test_window(TradingEnv& env, Agent& policy, NetworkBuilder& network_builder, int train_start_day, int start_day, int end_day, ofstream& result_csv) {
+	constexpr double starting_money = 10000.0;
 	env.reset(start_day, end_day, starting_money);
 	const double start_value = env.portfolio_value();
-	double baseline_money = baseline_starting_money;
-	const double baseline_start_value = baseline_money;
+	double baseline_money = starting_money;
+	const size_t baseline_stock = env.getBestPerformingStock(train_start_day, start_day);
 	while (!env.terminated()) {
 		const Observation observation = make_observation(env, network_builder);
 		const auto output = policy->act(observation, true);
 		const auto next_returns = env.getNextStepReturns();
-		const auto best_stock = static_cast<size_t>(max_element(next_returns.begin(), next_returns.end()) - next_returns.begin());
 		const auto weights = policy->action_to_weights(output.action).to(kCPU);
 		vector<double> action(weights.size(1));
 		for (int64_t stock = 0; stock < weights.size(1); ++stock) {
 			action[stock] = weights[0][stock].item<double>();
 		}
 		env.step(action);
-		baseline_money *= 1.0 + next_returns[best_stock];
+		baseline_money *= 1.0 + next_returns[baseline_stock];
 		result_csv << env.getCurrentDate() << ',' << env.portfolio_value() << ',' << baseline_money;
 		for (double weight : action) result_csv << ',' << weight * 100.0;
 		result_csv << '\n';
@@ -117,8 +141,6 @@ TestResult test_window(TradingEnv& env, Agent& policy, NetworkBuilder& network_b
 	}
 
 	cout << "test_window=" << start_day << ':' << end_day << " portfolio_start=" << start_value << " portfolio_end=" << env.portfolio_value() << '\n';
-	training_log << "test," << start_day << ',' << end_day << ",0,,,,," << start_value << ',' << env.portfolio_value() << ',' << baseline_start_value << ',' << baseline_money << '\n';
-	return {env.portfolio_value(), baseline_money};
 }
 
 int main() {
@@ -129,16 +151,16 @@ int main() {
 	}
 	filesystem::create_directories(workspace_root / "_logs");
 	filesystem::create_directories(workspace_root / "_results");
-	ofstream training_log(workspace_root / "_logs" / "training_log.csv");
+	ofstream training_log(workspace_root / "_logs" / "training_log.txt");
 	ofstream result_csv(workspace_root / "_results" / "test_results.csv");
 	if (!training_log || !result_csv) throw runtime_error("Could not create training or test result CSV");
-	training_log << "type,train_start,train_end,episode,policy_loss,value_loss,entropy,approx_kl,portfolio_start,portfolio_end,baseline_start,baseline_end\n";
+	TeeBuffer tee_buffer(cout.rdbuf(), training_log.rdbuf());
+	auto* original_cout_buffer = cout.rdbuf(&tee_buffer);
 	result_csv << "date,my_money,baseline_money";
 	for (const string& stock_name : env.getStockNames()) {
 		result_csv << ",percent_stock_" << stock_name;
 	}
 	result_csv << '\n' << setprecision(12);
-	training_log << setprecision(12);
 
 	NetworkBuilder network_builder;
 
@@ -152,16 +174,14 @@ int main() {
 	Adam optimizer(policy->parameters(), AdamOptions(config.learning_rate).weight_decay(config.weight_decay));
 
 	const int first_window_start = env.first_usable_day();
-	double test_money = 10000.0;
-	double baseline_money = 10000.0;
 	for (int start_day = first_window_start; start_day + TrainingConfig::TRAIN_DAYS + TrainingConfig::TEST_DAYS <= env.total_days(); start_day += TrainingConfig::TEST_DAYS) {
 		const int train_end = start_day + TrainingConfig::TRAIN_DAYS;
 		const int test_end = train_end + TrainingConfig::TEST_DAYS;
-		train_window(env, policy, optimizer, network_builder, config, start_day, train_end, training_log);
-		const TestResult result = test_window(env, policy, network_builder, train_end, test_end, test_money, baseline_money, result_csv, training_log);
-		test_money = result.policy_money;
-		baseline_money = result.baseline_money;
+		train_window(env, policy, optimizer, network_builder, config, start_day, train_end);
+		test_window(env, policy, network_builder, start_day, train_end, test_end, result_csv);
 	}
 
+	cout.flush();
+	cout.rdbuf(original_cout_buffer);
 	return 0;
 }

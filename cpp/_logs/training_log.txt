@@ -1,0 +1,207 @@
+train_window=49:805 episode=1 policy_loss=-0.00867202 value_loss=0.0046763
+train_window=49:805 episode=2 policy_loss=-0.0225002 value_loss=0.0043363
+train_window=49:805 episode=3 policy_loss=-0.0257184 value_loss=0.00479914
+train_window=49:805 episode=4 policy_loss=-0.0239408 value_loss=0.00651372
+train_window=49:805 episode=5 policy_loss=-0.0348627 value_loss=0.00492588
+train_window=49:805 episode=6 policy_loss=-0.0302581 value_loss=0.00600763
+train_window=49:805 episode=7 policy_loss=-0.0257382 value_loss=0.00568404
+train_window=49:805 episode=8 policy_loss=-0.033443 value_loss=0.00626932
+test_window=805:1057 portfolio_start=10000 portfolio_end=28433.6
+train_window=301:1057 episode=1 policy_loss=-0.024133 value_loss=0.00662437
+train_window=301:1057 episode=2 policy_loss=-0.024514 value_loss=0.020776
+train_window=301:1057 episode=3 policy_loss=-0.0285782 value_loss=0.007481
+train_window=301:1057 episode=4 policy_loss=-0.0343624 value_loss=0.00768691
+train_window=301:1057 episode=5 policy_loss=-0.0340357 value_loss=0.00620155
+train_window=301:1057 episode=6 policy_loss=-0.0366136 value_loss=0.00602584
+train_window=301:1057 episode=7 policy_loss=-0.0285886 value_loss=0.00899615
+train_window=301:1057 episode=8 policy_loss=-0.0362816 value_loss=0.00780966
+test_window=1057:1309 portfolio_start=10000 portfolio_end=11545.8
+train_window=553:1309 episode=1 policy_loss=-0.0314383 value_loss=0.0117173
+train_window=553:1309 episode=2 policy_loss=-0.0390849 value_loss=0.00762369
+train_window=553:1309 episode=3 policy_loss=-0.0468626 value_loss=0.0143314
+train_window=553:1309 episode=4 policy_loss=-0.0465385 value_loss=0.00969017
+train_window=553:1309 episode=5 policy_loss=-0.0431983 value_loss=0.0124366
+train_window=553:1309 episode=6 policy_loss=-0.0397062 value_loss=0.0231064
+train_window=553:1309 episode=7 policy_loss=-0.0397497 value_loss=0.0125809
+train_window=553:1309 episode=8 policy_loss=-0.0555116 value_loss=0.0119087
+test_window=1309:1561 portfolio_start=10000 portfolio_end=14471.9
+train_window=805:1561 episode=1 policy_loss=-0.0312287 value_loss=0.0129557
+train_window=805:1561 episode=2 policy_loss=-0.0290429 value_loss=0.0132304
+train_window=805:1561 episode=3 policy_loss=-0.0479575 value_loss=0.0081847
+train_window=805:1561 episode=4 policy_loss=-0.0456894 value_loss=0.0065518
+train_window=805:1561 episode=5 policy_loss=-0.0307233 value_loss=0.0178473
+train_window=805:1561 episode=6 policy_loss=-0.0456395 value_loss=0.00982734
+train_window=805:1561 episode=7 policy_loss=-0.0415521 value_loss=0.00842921
+train_window=805:1561 episode=8 policy_loss=-0.0481713 value_loss=0.00640392
+test_window=1561:1813 portfolio_start=10000 portfolio_end=12308.3
+train_window=1057:1813 episode=1 policy_loss=-0.0417485 value_loss=0.00640054
+train_window=1057:1813 episode=2 policy_loss=-0.0480419 value_loss=0.0041459
+train_window=1057:1813 episode=3 policy_loss=-0.0402171 value_loss=0.00462569
+train_window=1057:1813 episode=4 policy_loss=-0.0612361 value_loss=0.00332677
+train_window=1057:1813 episode=5 policy_loss=-0.0510703 value_loss=0.00392591
+train_window=1057:1813 episode=6 policy_loss=-0.0416642 value_loss=0.00331353
+train_window=1057:1813 episode=7 policy_loss=-0.0527549 value_loss=0.00347792
+train_window=1057:1813 episode=8 policy_loss=-0.0494721 value_loss=0.00415804
+test_window=1813:2065 portfolio_start=10000 portfolio_end=14365.9
+train_window=1309:2065 episode=1 policy_loss=-0.0421187 value_loss=0.00592022
+train_window=1309:2065 episode=2 policy_loss=-0.0515059 value_loss=0.00456793
+train_window=1309:2065 episode=3 policy_loss=-0.0498909 value_loss=0.0041679
+train_window=1309:2065 episode=4 policy_loss=-0.0527731 value_loss=0.00354759
+train_window=1309:2065 episode=5 policy_loss=-0.0477445 value_loss=0.00381625
+train_window=1309:2065 episode=6 policy_loss=-0.0546596 value_loss=0.00386459
+train_window=1309:2065 episode=7 policy_loss=-0.0589849 value_loss=0.00374712
+train_window=1309:2065 episode=8 policy_loss=-0.0425126 value_loss=0.00544104
+test_window=2065:2317 portfolio_start=10000 portfolio_end=7325.62
+train_window=1561:2317 episode=1 policy_loss=-0.0492513 value_loss=0.00739445
+train_window=1561:2317 episode=2 policy_loss=-0.0532888 value_loss=0.00589317
+train_window=1561:2317 episode=3 policy_loss=-0.0392836 value_loss=0.00553718
+train_window=1561:2317 episode=4 policy_loss=-0.0377229 value_loss=0.00645635
+train_window=1561:2317 episode=5 policy_loss=-0.0468103 value_loss=0.0052334
+train_window=1561:2317 episode=6 policy_loss=-0.0497803 value_loss=0.00620767
+train_window=1561:2317 episode=7 policy_loss=-0.0480509 value_loss=0.00547318
+train_window=1561:2317 episode=8 policy_loss=-0.0522463 value_loss=0.00510612
+test_window=2317:2569 portfolio_start=10000 portfolio_end=15743.1
+train_window=1813:2569 episode=1 policy_loss=-0.0494898 value_loss=0.00588617
+train_window=1813:2569 episode=2 policy_loss=-0.041508 value_loss=0.0048542
+train_window=1813:2569 episode=3 policy_loss=-0.0533248 value_loss=0.00515883
+train_window=1813:2569 episode=4 policy_loss=-0.0515208 value_loss=0.00484059
+train_window=1813:2569 episode=5 policy_loss=-0.049683 value_loss=0.00479313
+train_window=1813:2569 episode=6 policy_loss=-0.0534906 value_loss=0.00478109
+train_window=1813:2569 episode=7 policy_loss=-0.0525658 value_loss=0.00422049
+train_window=1813:2569 episode=8 policy_loss=-0.0477518 value_loss=0.00442428
+test_window=2569:2821 portfolio_start=10000 portfolio_end=11388.2
+train_window=2065:2821 episode=1 policy_loss=-0.043247 value_loss=0.00421488
+train_window=2065:2821 episode=2 policy_loss=-0.0478306 value_loss=0.00409533
+train_window=2065:2821 episode=3 policy_loss=-0.050626 value_loss=0.0042004
+train_window=2065:2821 episode=4 policy_loss=-0.0610719 value_loss=0.00409014
+train_window=2065:2821 episode=5 policy_loss=-0.0496586 value_loss=0.00399403
+train_window=2065:2821 episode=6 policy_loss=-0.0533835 value_loss=0.00332683
+train_window=2065:2821 episode=7 policy_loss=-0.0502536 value_loss=0.00382604
+train_window=2065:2821 episode=8 policy_loss=-0.0515278 value_loss=0.00360227
+test_window=2821:3073 portfolio_start=10000 portfolio_end=9770.32
+train_window=2317:3073 episode=1 policy_loss=-0.0406412 value_loss=0.00361548
+train_window=2317:3073 episode=2 policy_loss=-0.0482138 value_loss=0.00347067
+train_window=2317:3073 episode=3 policy_loss=-0.0432731 value_loss=0.00305678
+train_window=2317:3073 episode=4 policy_loss=-0.0492033 value_loss=0.00299368
+train_window=2317:3073 episode=5 policy_loss=-0.0459547 value_loss=0.00319316
+train_window=2317:3073 episode=6 policy_loss=-0.0381086 value_loss=0.00316421
+train_window=2317:3073 episode=7 policy_loss=-0.0495719 value_loss=0.00276618
+train_window=2317:3073 episode=8 policy_loss=-0.0552914 value_loss=0.00262078
+test_window=3073:3325 portfolio_start=10000 portfolio_end=9282.01
+train_window=2569:3325 episode=1 policy_loss=-0.051191 value_loss=0.00283417
+train_window=2569:3325 episode=2 policy_loss=-0.0424065 value_loss=0.00283163
+train_window=2569:3325 episode=3 policy_loss=-0.0524004 value_loss=0.00262217
+train_window=2569:3325 episode=4 policy_loss=-0.0501177 value_loss=0.0024393
+train_window=2569:3325 episode=5 policy_loss=-0.0437418 value_loss=0.00257531
+train_window=2569:3325 episode=6 policy_loss=-0.0581605 value_loss=0.00256184
+train_window=2569:3325 episode=7 policy_loss=-0.044298 value_loss=0.002572
+train_window=2569:3325 episode=8 policy_loss=-0.060308 value_loss=0.00240549
+test_window=3325:3577 portfolio_start=10000 portfolio_end=10010.6
+train_window=2821:3577 episode=1 policy_loss=-0.0553796 value_loss=0.00293593
+train_window=2821:3577 episode=2 policy_loss=-0.0545168 value_loss=0.00266856
+train_window=2821:3577 episode=3 policy_loss=-0.0451305 value_loss=0.0025619
+train_window=2821:3577 episode=4 policy_loss=-0.0459134 value_loss=0.00265791
+train_window=2821:3577 episode=5 policy_loss=-0.0479467 value_loss=0.00257341
+train_window=2821:3577 episode=6 policy_loss=-0.0621855 value_loss=0.00243085
+train_window=2821:3577 episode=7 policy_loss=-0.0598045 value_loss=0.00259317
+train_window=2821:3577 episode=8 policy_loss=-0.0554875 value_loss=0.00257719
+test_window=3577:3829 portfolio_start=10000 portfolio_end=10045.9
+train_window=3073:3829 episode=1 policy_loss=-0.0509821 value_loss=0.00378026
+train_window=3073:3829 episode=2 policy_loss=-0.0519109 value_loss=0.00297874
+train_window=3073:3829 episode=3 policy_loss=-0.0483195 value_loss=0.00256461
+train_window=3073:3829 episode=4 policy_loss=-0.0511006 value_loss=0.0029584
+train_window=3073:3829 episode=5 policy_loss=-0.0574096 value_loss=0.00218555
+train_window=3073:3829 episode=6 policy_loss=-0.0573499 value_loss=0.00223567
+train_window=3073:3829 episode=7 policy_loss=-0.060572 value_loss=0.00222271
+train_window=3073:3829 episode=8 policy_loss=-0.0540459 value_loss=0.00199167
+test_window=3829:4081 portfolio_start=10000 portfolio_end=9459.02
+train_window=3325:4081 episode=1 policy_loss=-0.0271713 value_loss=0.00591034
+train_window=3325:4081 episode=2 policy_loss=-0.0474059 value_loss=0.00492325
+train_window=3325:4081 episode=3 policy_loss=-0.0392288 value_loss=0.00470899
+train_window=3325:4081 episode=4 policy_loss=-0.0439572 value_loss=0.00448854
+train_window=3325:4081 episode=5 policy_loss=-0.0505605 value_loss=0.00474747
+train_window=3325:4081 episode=6 policy_loss=-0.0528692 value_loss=0.00455776
+train_window=3325:4081 episode=7 policy_loss=-0.044674 value_loss=0.00455394
+train_window=3325:4081 episode=8 policy_loss=-0.05244 value_loss=0.00431175
+test_window=4081:4333 portfolio_start=10000 portfolio_end=16593.6
+train_window=3577:4333 episode=1 policy_loss=-0.04617 value_loss=0.00656584
+train_window=3577:4333 episode=2 policy_loss=-0.0481023 value_loss=0.00719231
+train_window=3577:4333 episode=3 policy_loss=-0.0601233 value_loss=0.00636741
+train_window=3577:4333 episode=4 policy_loss=-0.0558582 value_loss=0.00686146
+train_window=3577:4333 episode=5 policy_loss=-0.0453157 value_loss=0.00748061
+train_window=3577:4333 episode=6 policy_loss=-0.0583798 value_loss=0.00639355
+train_window=3577:4333 episode=7 policy_loss=-0.0490414 value_loss=0.00668182
+train_window=3577:4333 episode=8 policy_loss=-0.0615511 value_loss=0.00649487
+test_window=4333:4585 portfolio_start=10000 portfolio_end=13896.6
+train_window=3829:4585 episode=1 policy_loss=-0.0568075 value_loss=0.00713518
+train_window=3829:4585 episode=2 policy_loss=-0.0565192 value_loss=0.00602448
+train_window=3829:4585 episode=3 policy_loss=-0.0583038 value_loss=0.00646985
+train_window=3829:4585 episode=4 policy_loss=-0.0499017 value_loss=0.00593601
+train_window=3829:4585 episode=5 policy_loss=-0.0527275 value_loss=0.0056495
+train_window=3829:4585 episode=6 policy_loss=-0.0542072 value_loss=0.00509527
+train_window=3829:4585 episode=7 policy_loss=-0.0678592 value_loss=0.00540687
+train_window=3829:4585 episode=8 policy_loss=-0.0497901 value_loss=0.00566991
+test_window=4585:4837 portfolio_start=10000 portfolio_end=16154.9
+train_window=4081:4837 episode=1 policy_loss=-0.0576714 value_loss=0.00555001
+train_window=4081:4837 episode=2 policy_loss=-0.0464549 value_loss=0.00516328
+train_window=4081:4837 episode=3 policy_loss=-0.0583078 value_loss=0.00527242
+train_window=4081:4837 episode=4 policy_loss=-0.0669847 value_loss=0.00429155
+train_window=4081:4837 episode=5 policy_loss=-0.0548797 value_loss=0.00401199
+train_window=4081:4837 episode=6 policy_loss=-0.0530643 value_loss=0.00443947
+train_window=4081:4837 episode=7 policy_loss=-0.0569567 value_loss=0.00358311
+train_window=4081:4837 episode=8 policy_loss=-0.0575622 value_loss=0.00357014
+test_window=4837:5089 portfolio_start=10000 portfolio_end=6845.17
+train_window=4333:5089 episode=1 policy_loss=-0.0504262 value_loss=0.0124208
+train_window=4333:5089 episode=2 policy_loss=-0.052893 value_loss=0.0100115
+train_window=4333:5089 episode=3 policy_loss=-0.0469219 value_loss=0.0116095
+train_window=4333:5089 episode=4 policy_loss=-0.0515442 value_loss=0.00910142
+train_window=4333:5089 episode=5 policy_loss=-0.0416226 value_loss=0.00969881
+train_window=4333:5089 episode=6 policy_loss=-0.0460617 value_loss=0.00995027
+train_window=4333:5089 episode=7 policy_loss=-0.0565821 value_loss=0.00975211
+train_window=4333:5089 episode=8 policy_loss=-0.0504233 value_loss=0.0110155
+test_window=5089:5341 portfolio_start=10000 portfolio_end=21502.4
+train_window=4585:5341 episode=1 policy_loss=-0.0528205 value_loss=0.0108306
+train_window=4585:5341 episode=2 policy_loss=-0.0604837 value_loss=0.00773326
+train_window=4585:5341 episode=3 policy_loss=-0.0565375 value_loss=0.00644102
+train_window=4585:5341 episode=4 policy_loss=-0.0446503 value_loss=0.00649898
+train_window=4585:5341 episode=5 policy_loss=-0.0559933 value_loss=0.00647193
+train_window=4585:5341 episode=6 policy_loss=-0.0594657 value_loss=0.00607002
+train_window=4585:5341 episode=7 policy_loss=-0.0609933 value_loss=0.00520198
+train_window=4585:5341 episode=8 policy_loss=-0.0637667 value_loss=0.00502471
+test_window=5341:5593 portfolio_start=10000 portfolio_end=12913
+train_window=4837:5593 episode=1 policy_loss=-0.0540477 value_loss=0.0053092
+train_window=4837:5593 episode=2 policy_loss=-0.0503731 value_loss=0.00506703
+train_window=4837:5593 episode=3 policy_loss=-0.0544667 value_loss=0.00466141
+train_window=4837:5593 episode=4 policy_loss=-0.0549583 value_loss=0.00527983
+train_window=4837:5593 episode=5 policy_loss=-0.0628277 value_loss=0.00401172
+train_window=4837:5593 episode=6 policy_loss=-0.0529211 value_loss=0.00337564
+train_window=4837:5593 episode=7 policy_loss=-0.052686 value_loss=0.00386365
+train_window=4837:5593 episode=8 policy_loss=-0.0539379 value_loss=0.00379225
+test_window=5593:5845 portfolio_start=10000 portfolio_end=10203.2
+train_window=5089:5845 episode=1 policy_loss=-0.0602814 value_loss=0.00386611
+train_window=5089:5845 episode=2 policy_loss=-0.0467451 value_loss=0.0034082
+train_window=5089:5845 episode=3 policy_loss=-0.0571498 value_loss=0.00385692
+train_window=5089:5845 episode=4 policy_loss=-0.0639961 value_loss=0.0034127
+train_window=5089:5845 episode=5 policy_loss=-0.0647135 value_loss=0.00293756
+train_window=5089:5845 episode=6 policy_loss=-0.0667254 value_loss=0.00312854
+train_window=5089:5845 episode=7 policy_loss=-0.0611528 value_loss=0.00344719
+train_window=5089:5845 episode=8 policy_loss=-0.0639078 value_loss=0.00333871
+test_window=5845:6097 portfolio_start=10000 portfolio_end=14542
+train_window=5341:6097 episode=1 policy_loss=-0.0572033 value_loss=0.00275962
+train_window=5341:6097 episode=2 policy_loss=-0.0510581 value_loss=0.00257531
+train_window=5341:6097 episode=3 policy_loss=-0.051141 value_loss=0.00254317
+train_window=5341:6097 episode=4 policy_loss=-0.0566164 value_loss=0.00233683
+train_window=5341:6097 episode=5 policy_loss=-0.055334 value_loss=0.00227109
+train_window=5341:6097 episode=6 policy_loss=-0.0631069 value_loss=0.0023913
+train_window=5341:6097 episode=7 policy_loss=-0.0592806 value_loss=0.0023415
+train_window=5341:6097 episode=8 policy_loss=-0.05045 value_loss=0.00229625
+test_window=6097:6349 portfolio_start=10000 portfolio_end=10795.4
+train_window=5593:6349 episode=1 policy_loss=-0.0542093 value_loss=0.00270265
+train_window=5593:6349 episode=2 policy_loss=-0.0589371 value_loss=0.00242693
+train_window=5593:6349 episode=3 policy_loss=-0.0624191 value_loss=0.00235285
+train_window=5593:6349 episode=4 policy_loss=-0.0555205 value_loss=0.00211378
+train_window=5593:6349 episode=5 policy_loss=-0.0437017 value_loss=0.0022303
+train_window=5593:6349 episode=6 policy_loss=-0.0624466 value_loss=0.00244687
+train_window=5593:6349 episode=7 policy_loss=-0.0567659 value_loss=0.00221631
+train_window=5593:6349 episode=8 policy_loss=-0.0567698 value_loss=0.002473
+test_window=6349:6601 portfolio_start=10000 portfolio_end=15675.1
