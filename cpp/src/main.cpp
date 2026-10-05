@@ -1,8 +1,11 @@
 #include <filesystem>
 #include <algorithm>
+#include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <streambuf>
 #include <stdexcept>
 #include <vector>
@@ -60,7 +63,26 @@ struct TrainingConfig {
 	static constexpr int TRAIN_DAYS = 3 * 252;
 	static constexpr int TEST_DAYS = 252;
 	static constexpr int EPISODES_PER_WINDOW = 8;
+	static constexpr bool WINNER_TAKES_ALL = false;
 };
+
+Tensor configure_allocation_weights(const Tensor& weights) {
+	if (TrainingConfig::WINNER_TAKES_ALL) {
+		const auto best_stock = weights.argmax(-1);
+		return torch::one_hot(best_stock, weights.size(-1)).to(weights.scalar_type());
+	}
+	return weights;
+}
+
+string timestamped_log_filename() {
+	const auto now = chrono::system_clock::now();
+	const auto milliseconds = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
+	const time_t current_time = chrono::system_clock::to_time_t(now);
+	stringstream filename;
+	filename << "training_log_" << put_time(localtime(&current_time), "%Y%m%d_%H%M%S")
+	         << '_' << setfill('0') << setw(3) << milliseconds << ".txt";
+	return filename.str();
+}
 
 class TeeBuffer : public streambuf {
 public:
@@ -100,7 +122,7 @@ void train_window(TradingEnv& env, Agent& policy, optim::Adam& optimizer, Networ
 		while (!env.terminated()) {
 			const Observation observation = make_observation(env, network_builder);
 			const auto output = policy->act(observation);
-			const auto weights = policy->action_to_weights(output.action).to(kCPU);
+			const auto weights = configure_allocation_weights(policy->action_to_weights(output.action)).to(kCPU);
 			vector<double> action(weights.size(1));
 			for (int64_t stock = 0; stock < weights.size(1); ++stock) {
 				action[stock] = weights[0][stock].item<double>();
@@ -127,7 +149,7 @@ void test_window(TradingEnv& env, Agent& policy, NetworkBuilder& network_builder
 		const Observation observation = make_observation(env, network_builder);
 		const auto output = policy->act(observation, true);
 		const auto next_returns = env.getNextStepReturns();
-		const auto weights = policy->action_to_weights(output.action).to(kCPU);
+		const auto weights = configure_allocation_weights(policy->action_to_weights(output.action)).to(kCPU);
 		vector<double> action(weights.size(1));
 		for (int64_t stock = 0; stock < weights.size(1); ++stock) {
 			action[stock] = weights[0][stock].item<double>();
@@ -151,7 +173,7 @@ int main() {
 	}
 	filesystem::create_directories(workspace_root / "_logs");
 	filesystem::create_directories(workspace_root / "_results");
-	ofstream training_log(workspace_root / "_logs" / "training_log.txt");
+	ofstream training_log(workspace_root / "_logs" / timestamped_log_filename());
 	ofstream result_csv(workspace_root / "_results" / "test_results.csv");
 	if (!training_log || !result_csv) throw runtime_error("Could not create training or test result CSV");
 	TeeBuffer tee_buffer(cout.rdbuf(), training_log.rdbuf());
