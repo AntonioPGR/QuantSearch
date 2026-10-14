@@ -1,23 +1,19 @@
 #include <filesystem>
-#include <algorithm>
 #include <chrono>
-#include <ctime>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
-#include <sstream>
-#include <streambuf>
-#include <stdexcept>
 #include <vector>
 
 #include "network_builder.cpp"
 #include "network_feature_extractor.cpp"
 #include "ppo.cpp"
 #include "trading_env.cpp"
+#include "config.cpp"
 
 using namespace std;
 using namespace torch;
 using namespace torch::optim;
+using namespace filesystem;
 
 Tensor node_features_to_tensor(const std::vector<std::vector<double>>& features) {
 	const int64_t stocks = static_cast<int64_t>(features.size());
@@ -59,65 +55,17 @@ Observation make_observation(TradingEnv& env, NetworkBuilder& builder) {
 	};
 }
 
-struct TrainingConfig {
-	static constexpr int TRAIN_DAYS = 3 * 252;
-	static constexpr int TEST_DAYS = 252;
-	static constexpr int EPISODES_PER_WINDOW = 8;
-	static constexpr bool WINNER_TAKES_ALL = false;
-};
-
 Tensor configure_allocation_weights(const Tensor& weights) {
-	if (TrainingConfig::WINNER_TAKES_ALL) {
+	if (Config::WINNER_TAKES_ALL) {
 		const auto best_stock = weights.argmax(-1);
-		return torch::one_hot(best_stock, weights.size(-1)).to(weights.scalar_type());
+		return one_hot(best_stock, weights.size(-1)).to(weights.scalar_type());
 	}
 	return weights;
 }
 
-string timestamped_log_filename() {
-	const auto now = chrono::system_clock::now();
-	const auto milliseconds = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
-	const time_t current_time = chrono::system_clock::to_time_t(now);
-	stringstream filename;
-	filename << "training_log_" << put_time(localtime(&current_time), "%Y%m%d_%H%M%S")
-	         << '_' << setfill('0') << setw(3) << milliseconds << ".txt";
-	return filename.str();
-}
-
-class TeeBuffer : public streambuf {
-public:
-	TeeBuffer(streambuf* terminal_buffer, streambuf* log_buffer)
-		: terminal_buffer_(terminal_buffer), log_buffer_(log_buffer) {}
-
-protected:
-	int_type overflow(int_type character) override {
-		if (traits_type::eq_int_type(character, traits_type::eof())) return traits_type::not_eof(character);
-		const auto terminal_result = terminal_buffer_->sputc(traits_type::to_char_type(character));
-		const auto log_result = log_buffer_->sputc(traits_type::to_char_type(character));
-		return traits_type::eq_int_type(terminal_result, traits_type::eof()) || traits_type::eq_int_type(log_result, traits_type::eof())
-			? traits_type::eof() : character;
-	}
-
-	streamsize xsputn(const char* text, streamsize count) override {
-		const streamsize terminal_count = terminal_buffer_->sputn(text, count);
-		const streamsize log_count = log_buffer_->sputn(text, count);
-		return min(terminal_count, log_count);
-	}
-
-	int sync() override {
-		const int terminal_result = terminal_buffer_->pubsync();
-		const int log_result = log_buffer_->pubsync();
-		return terminal_result == 0 && log_result == 0 ? 0 : -1;
-	}
-
-private:
-	streambuf* terminal_buffer_;
-	streambuf* log_buffer_;
-};
-
-void train_window(TradingEnv& env, Agent& policy, optim::Adam& optimizer, NetworkBuilder& network_builder, const PPOConfig& ppo_config, int start_day, int end_day) {
-	for (int episode = 0; episode < TrainingConfig::EPISODES_PER_WINDOW; ++episode) {
-		env.reset(start_day, end_day);
+void train_window(TradingEnv& env, Agent& policy, Adam& optimizer, NetworkBuilder& network_builder, const PPOConfig& ppo_config, int start_day, int end_day) {
+	for (int episode = 0; episode < Config::EPISODES_PER_WINDOW; ++episode) {
+		env.reset(start_day, end_day, Config::STARTING_CASH);
 		RolloutBuffer rollout;
 		while (!env.terminated()) {
 			const Observation observation = make_observation(env, network_builder);
@@ -140,10 +88,9 @@ void train_window(TradingEnv& env, Agent& policy, optim::Adam& optimizer, Networ
 }
 
 void test_window(TradingEnv& env, Agent& policy, NetworkBuilder& network_builder, int train_start_day, int start_day, int end_day, ofstream& result_csv) {
-	constexpr double starting_money = 10000.0;
-	env.reset(start_day, end_day, starting_money);
+	env.reset(start_day, end_day, Config::STARTING_CASH);
 	const double start_value = env.portfolio_value();
-	double baseline_money = starting_money;
+	double baseline_money = Config::STARTING_CASH;
 	const size_t baseline_stock = env.getBestPerformingStock(train_start_day, start_day);
 	while (!env.terminated()) {
 		const Observation observation = make_observation(env, network_builder);
@@ -165,27 +112,15 @@ void test_window(TradingEnv& env, Agent& policy, NetworkBuilder& network_builder
 	cout << "test_window=" << start_day << ':' << end_day << " portfolio_start=" << start_value << " portfolio_end=" << env.portfolio_value() << '\n';
 }
 
+
+
 int main() {
-	TradingEnv env(TrainingConfig::TRAIN_DAYS, TrainingConfig::TEST_DAYS);
-	filesystem::path workspace_root = filesystem::current_path();
-	if (!filesystem::is_directory(workspace_root / "_data") && filesystem::is_directory(workspace_root / "../_data")) {
-		workspace_root = filesystem::absolute(workspace_root / "..");
-	}
-	filesystem::create_directories(workspace_root / "_logs");
-	filesystem::create_directories(workspace_root / "_results");
-	ofstream training_log(workspace_root / "_logs" / timestamped_log_filename());
-	ofstream result_csv(workspace_root / "_results" / "test_results.csv");
-	if (!training_log || !result_csv) throw runtime_error("Could not create training or test result CSV");
-	TeeBuffer tee_buffer(cout.rdbuf(), training_log.rdbuf());
-	auto* original_cout_buffer = cout.rdbuf(&tee_buffer);
-	result_csv << "date,my_money,baseline_money";
-	for (const string& stock_name : env.getStockNames()) {
-		result_csv << ",percent_stock_" << stock_name;
-	}
-	result_csv << '\n' << setprecision(12);
+
+	TradingEnv env(Config::TRAIN_DAYS, Config::TEST_DAYS, Config::OBS_LEN, Config::DATA_DIR, Config::STARTING_CASH);
+
+	OutputFiles output_files(env.getStockNames());
 
 	NetworkBuilder network_builder;
-
 	const auto initial_observation = make_observation(env, network_builder);
 	const int64_t stocks_amount = initial_observation.x_portfolio.size(1);
 	const int64_t node_features_amount = initial_observation.x2d_price.size(1) / stocks_amount;
@@ -196,14 +131,12 @@ int main() {
 	Adam optimizer(policy->parameters(), AdamOptions(config.learning_rate).weight_decay(config.weight_decay));
 
 	const int first_window_start = env.first_usable_day();
-	for (int start_day = first_window_start; start_day + TrainingConfig::TRAIN_DAYS + TrainingConfig::TEST_DAYS <= env.total_days(); start_day += TrainingConfig::TEST_DAYS) {
-		const int train_end = start_day + TrainingConfig::TRAIN_DAYS;
-		const int test_end = train_end + TrainingConfig::TEST_DAYS;
+	for (int start_day = first_window_start; start_day + Config::TRAIN_DAYS + Config::TEST_DAYS <= env.total_days(); start_day += Config::TEST_DAYS) {
+		const int train_end = start_day + Config::TRAIN_DAYS;
+		const int test_end = train_end + Config::TEST_DAYS;
 		train_window(env, policy, optimizer, network_builder, config, start_day, train_end);
-		test_window(env, policy, network_builder, start_day, train_end, test_end, result_csv);
+		test_window(env, policy, network_builder, start_day, train_end, test_end, output_files.result_csv);
 	}
 
-	cout.flush();
-	cout.rdbuf(original_cout_buffer);
 	return 0;
 }

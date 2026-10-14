@@ -16,6 +16,8 @@ add_executable(QuantSearch
         src/trading_env.cpp
         src/ppo.cpp
         src/agent.cpp
+        src/config.cpp
+        src/output_files.cpp
 )
 
 target_include_directories(QuantSearch PRIVATE

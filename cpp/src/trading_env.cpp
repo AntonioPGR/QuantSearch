@@ -13,23 +13,26 @@ class TradingEnv {
 	public:
 		static constexpr double BANKRUPTCY_REWARD = -1.0;
 
-		TradingEnv(int train_days, int test_days){
+		TradingEnv(int train_days, int test_days, int obs_len, string data_dir, double starting_cash){
+			TRAIN_DAYS = train_days;
+			TEST_DAYS = test_days;
+			OBS_LEN = obs_len;
+			DATA_DIR = data_dir;
+			INIT_CASH = starting_cash;
 			loadData();
 			total_of_days = closes.size();
-			window_train_days = train_days;
-			window_test_days = test_days;
-			reset(0, window_train_days);
+			reset(0, TRAIN_DAYS, starting_cash);
 		}
 
 		void reset() {
-			reset(window_start, window_end);
+			reset(window_start, window_end, INIT_CASH);
 		}
 
-		void reset(int start_day, int end_day, double starting_cash = 10000.0) {
+		void reset(int start_day, int end_day, double starting_cash) {
 			window_start = max(0, start_day);
 			window_end = min(static_cast<int>(total_of_days), end_day);
 			current_step = max(OBS_LEN - 1, window_start - 1);
-			initial_cash = starting_cash;
+			INIT_CASH = starting_cash;
 			cash_portfolio = calculateInitialCashPortfolio();
 			stock_portfolio = calculateStockPortfolioByCashPortfolio();
 			percent_portfolio = calculatePercentPortfolioByCashPortfolio();
@@ -140,32 +143,37 @@ class TradingEnv {
 
 		int first_usable_day() const { return OBS_LEN - 1; }
 		int total_days() const { return static_cast<int>(total_of_days); }
-
-		void setStep(int step) {
-			this->current_step = step;
-		}
+		void setStep(int step) {this->current_step = step;}
 
 	private:
+		// FIXED VARS
 		int CLOSE_COL = 1;
 		int VOLUME_COL = 5;
+
+		// PARAMETERS VARS
 		int OBS_LEN = 50;
 		string DATA_DIR = "_data";
+		int TRAIN_DAYS = 3 * 252;
+		int TEST_DAYS = 252;
+		double INIT_CASH = 10000;
 
+		// CALCULATED VARS
+		unsigned long total_of_days = 0;
 		int stocks_amount = 0;
 		int current_step = 0;
-		unsigned long total_of_days = 0;
-		int window_train_days = 0;
-		int window_test_days = 0;
 		int window_start = 0;
 		int window_end = 0;
-		double initial_cash = 10000;
+
+		// DATA VECTORS
 		vector<double> cash_portfolio;
 		vector<double> stock_portfolio;
 		vector<double> percent_portfolio;
-		vector<vector<double>> closes;
-		vector<vector<double>> volumes;
 		vector<string> dates;
 		vector<string> stock_names;
+
+		// DATA MATRIXS
+		vector<vector<double>> closes;
+		vector<vector<double>> volumes;
 
 		void loadData(){
 			closes.clear();
@@ -219,7 +227,7 @@ class TradingEnv {
 		vector<double> calculateInitialCashPortfolio(){
 			auto arr = std::vector<double>(stocks_amount, 0);
 			for (int i = 0; i < stocks_amount; i++) {
-				arr[i] = initial_cash / stocks_amount;
+				arr[i] = INIT_CASH / stocks_amount;
 			}
 			return arr;
 		};

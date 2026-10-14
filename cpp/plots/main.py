@@ -1,7 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("../_results/test_results.csv")
+RUN_ID="20261005_215335_802"
+
+df = pd.read_csv(f"../_results/{RUN_ID}.csv")
 df["date"] = pd.to_datetime(df["date"])
 
 fig, ax = plt.subplots(figsize=(16, 6))
@@ -27,4 +29,4 @@ ax.set_title("My Money vs Baseline Money")
 ax.legend()
 
 plt.tight_layout()
-plt.savefig("../_plots/money_comparison_plot.png")
+plt.savefig(f"../_plots/{RUN_ID}.png")
