@@ -18,6 +18,7 @@ add_executable(QuantSearch
         src/agent.cpp
         src/config.cpp
         src/output_files.cpp
+        src/observation.cpp
 )
 
 target_include_directories(QuantSearch PRIVATE

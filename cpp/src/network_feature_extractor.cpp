@@ -1,17 +1,22 @@
-	#include <vector>
+#pragma once
+
+#include <vector>
 #include <cmath>
 #include <algorithm>
 
 using namespace std;
 
 class NetworkFeatureExtractor {
+
 	public:
+		static constexpr int nodeLevelFeaturesAmount = 8;
+		static constexpr int linkLevelFeaturesAmount = 8;
 
 		//==================================================================================================================
 		// [stock1 -> [Node Degree, Weighted Node Degree, Average Neighbor Degree, Propensity of increase degree, Node Betweenes, Node Closeness, Node Eigenvector, Node Clustering Coefficient]]
 		static vector<vector<double>> extractNodeLevelFeatures(vector<vector<double> > graph) {
 			int n = graph.size();
-			vector<vector<double>> res(n, vector<double>(8, 0.0));
+			vector<vector<double>> res(n, vector<double>(nodeLevelFeaturesAmount, 0.0));
 			vector<vector<int> > neighbors(n);
 
 			// Basic Degree Calculations
@@ -128,10 +133,11 @@ class NetworkFeatureExtractor {
 
 
 		//==================================================================================================================
-		// [stock1 -> [stock2 -> [Link Existence, Correlation Value, Common neighbors, Jaccard Coefficient, Adamic-Adar Coefficient, Sorenson-Dice Coefficient, Edge Betweenness, Same Community, Preferential Attachment ]]]
+		// [stock1 -> [stock2 -> [Link Existence, Correlation Value, Common neighbors, Jaccard Coefficient, Adamic-Adar Coefficient, Sorenson-Dice Coefficient, Edge Betweenness, Preferential Attachment ]]]
+		//  TODO --> Same Community
 		static vector<vector<vector<double> > > extractLinkLevelFeatures(vector<vector<double> > graph) {
 			int n = graph.size();
-			vector<vector<vector<double>>> res(n, vector<vector<double> >(n, vector<double>(9, 0.0)));
+			vector<vector<vector<double>>> res(n, vector<vector<double> >(n, vector<double>(linkLevelFeaturesAmount, 0.0)));
 
 			vector<int> degree(n, 0);
 			vector<vector<int> > neighbors(n);
@@ -222,10 +228,10 @@ class NetworkFeatureExtractor {
 					res[i][j][6] = edge_btw;
 
 					// Same Community
-					res[i][j][7] = 0.0; // TODO: implement louvain algorithm
+					// res[i][j][7] = 0.0; // TODO: implement louvain algorithm
 
 					// Preferential Attachment
-					res[i][j][8] = degree[i] * degree[j];
+					res[i][j][7] = degree[i] * degree[j];
 				}
 			}
 			return res;

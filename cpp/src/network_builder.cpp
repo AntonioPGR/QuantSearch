@@ -1,15 +1,17 @@
+#pragma once
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
+#include "config.cpp"
 
 using namespace std;
 
 class NetworkBuilder {
 
-	float base_threshold = 0.5;
-
 	public:
-		vector<vector<double>> build(const vector<vector<double>>& obs){
+		static vector<vector<double>> build(const vector<vector<double>>& obs){
 			vector<vector<double>> correlations = calculateCorrelationMatrix(obs);
 			int number_of_stocks = correlations[0].size();
 
@@ -31,15 +33,14 @@ class NetworkBuilder {
 			vector<vector<double>> graph = correlations;
 			for (int i = 0; i < number_of_stocks; i++) {
 				for (int j = 0; j < number_of_stocks; j++) {
-					if (abs(graph[i][j]) < percent_threshold || abs(graph[i][j]) < base_threshold) graph[i][j] = 0.0;
+					if (abs(graph[i][j]) < percent_threshold || abs(graph[i][j]) < Config::NETWORK_THRESHOLD) graph[i][j] = 0.0;
 				}
 			}
 
 			return graph;
 		};
 
-	private:
-		vector<vector<double>> calculateCorrelationMatrix(const vector<vector<double>>& obs){
+		static vector<vector<double>> calculateCorrelationMatrix(const vector<vector<double>>& obs){
 			int timesteps = obs.size();
 			int stocks = obs[0].size();
 
