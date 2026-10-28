@@ -1,0 +1,17 @@
+CODE CHANGES:
+tirar portfolio do input
+sem volume
+mudar close para calcular com base no log do retorno diario
+
+METRICS TO CALCULATE / PLOTS:
+histograma dos retornos
+retornos ordenados
+log do retorno por dia
+sharpe ratio
+scatter plot: retorno pelo desvio padrao
+maximo drow down DDD
+numero de ordens
+
+BASELINES
+mesmo percentual em cada uma delas
+
