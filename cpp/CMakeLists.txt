@@ -15,10 +15,12 @@ add_executable(QuantSearch
         src/network_feature_extractor.cpp
         src/trading_env.cpp
         src/ppo.cpp
-        src/agent.cpp
+        src/agent_convolutional.cpp
+        src/agent_matrix.cpp
         src/config.cpp
         src/output_files.cpp
         src/observation.cpp
+        src/baseline_calculator.cpp
 )
 
 target_include_directories(QuantSearch PRIVATE

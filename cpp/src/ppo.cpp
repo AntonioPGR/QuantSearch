@@ -2,7 +2,8 @@
 
 #include <torch/torch.h>
 #include <vector>
-#include "agent.cpp"
+#include "agent_convolutional.cpp"
+#include "agent_matrix.cpp"
 
 using namespace std;
 using namespace torch;
@@ -13,17 +14,15 @@ using namespace torch::nn::utils;
 // MB = Minibatch size (PPOConfig::minibatch_size, the last minibatch can be smaller)
 // N  = Number of stocks (amount of assets in the portfolio)
 //
-// HOW THE REWARD REACHES THE PPO HEADS AND THE CONVOLUTIONS ===========================================================
+// HOW THE REWARD REACHES THE SELECTED AGENT =========================================================================
 // 1. Rollout: agent->act() runs under NoGradGuard, the env returns reward_t = log2(new_cash / old_cash).
-//    The raw observation tensors (not the conv outputs) are stored, so the convolutions can be re-run with gradients.
+//    Raw observation tensors are stored so the selected agent can re-run its forward pass with gradients.
 // 2. computeGAE(): rewards -> advantages A_t (how much better the action was than expected) and returns R_t = A_t + V_t.
-// 3. ppoUpdate(): agent->evaluate_actions() re-runs the WHOLE forward (Conv1d / Conv2d -> mlp_shared -> actor / critic)
-//    with autograd on, so the graph goes from the loss back to the input of every convolution.
-//      policy_loss  = -mean(min(ratio * A, clip(ratio) * A))   -> reward reaches actor, mlp_shared and every conv via A
-//      value_loss   = mse(V, R)                                -> reward reaches critic, mlp_shared and every conv via R
+// 3. ppoUpdate(): agent->evaluate_actions() re-runs the selected model with autograd on.
+//      policy_loss  = -mean(min(ratio * A, clip(ratio) * A))   -> reward reaches the actor and feature-processing layers
+//      value_loss   = mse(V, R)                                -> reward reaches the critic and feature-processing layers
 //      entropy_loss = -mean(entropy)                           -> only log_std
-//    loss.backward() writes d(loss)/d(theta) in every registered parameter (convs included, they are registered with
-//    register_module in the agent), and optimizer.step() (Adam over agent->parameters()) updates all of them together.
+//    loss.backward() updates every registered parameter of the selected agent.
 
 struct PPOConfig {
   static constexpr int64_t rollout_steps  = 2048;
@@ -94,7 +93,8 @@ struct PPOStats {
 };
 
 // One full PPO update: several epochs of shuffled minibatches over the rollout.
-inline PPOStats ppoUpdate(Agent& agent, optim::Optimizer& optimizer, const RolloutBuffer& buf) {
+template <typename AgentType>
+inline PPOStats ppoUpdate(AgentType& agent, optim::Optimizer& optimizer, const RolloutBuffer& buf) {
   if (buf.size() == 0) return {};
 
   auto obs          = buf.obs();
@@ -123,7 +123,7 @@ inline PPOStats ppoUpdate(Agent& agent, optim::Optimizer& optimizer, const Rollo
       auto mb_adv = advantages.index_select(0, idx);
       auto mb_ret = returns.index_select(0, idx);
 
-      // Forward WITH gradients through convs -> mlp_shared -> actor / critic. log_prob, entropy, value: [MB]
+      // Forward with gradients through the selected agent. log_prob, entropy, value: [MB]
       auto [log_prob, entropy, value] = agent->evaluate_actions(mb_obs, mb_act);
 
       // Clipped surrogate objective.
@@ -139,7 +139,7 @@ inline PPOStats ppoUpdate(Agent& agent, optim::Optimizer& optimizer, const Rollo
                 + PPOConfig::value_coef   * value_loss
                 + PPOConfig::entropy_coef * entropy_loss;
 
-      // Backward: the reward (inside mb_adv and mb_ret) flows to every parameter, convolutions included.
+      // Backward: the reward (inside mb_adv and mb_ret) flows to every parameter in the selected agent.
       optimizer.zero_grad();
       loss.backward();
       clip_grad_norm_(agent->parameters(), PPOConfig::max_grad_norm);
@@ -147,10 +147,10 @@ inline PPOStats ppoUpdate(Agent& agent, optim::Optimizer& optimizer, const Rollo
 
       {
         NoGradGuard ng;
-        stats.policy_loss += policy_loss.item<float>();
-        stats.value_loss  += value_loss.item<float>();
-        stats.entropy     += entropy.mean().item<float>();
-        stats.approx_kl   += (mb_old - log_prob).mean().item<float>();
+        stats.policy_loss += policy_loss.template item<float>();
+        stats.value_loss  += value_loss.template item<float>();
+        stats.entropy     += entropy.mean().template item<float>();
+        stats.approx_kl   += (mb_old - log_prob).mean().template item<float>();
       }
       ++n_updates;
     }

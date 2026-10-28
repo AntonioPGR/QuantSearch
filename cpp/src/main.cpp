@@ -2,15 +2,19 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <type_traits>
 #include <vector>
 
 #include "output_files.cpp"
 #include "observation.cpp"
+#include "baseline_calculator.cpp"
 
 using namespace std;
 using namespace torch;
 using namespace torch::optim;
 using namespace filesystem;
+
+using SelectedAgent = conditional_t<Config::USE_FINANCIAL_NETWORK_MATRIX_AGENT, FinancialNetworkMatrixAgent, Agent>;
 
 // CONSTANTS USED IN THE SHAPES AND WINDOW TIMELINE ====================================================================
 // N  = Number of stocks (amount of assets in the portfolio, env.getStocksAmount())
@@ -21,7 +25,7 @@ using namespace filesystem;
 // FLOW ================================================================================================================
 // 1. Train window: RolloutBuffer collects observations, actions, log_probs, values, and rewards over episodes.
 //    GAE calculates advantages and returns. PPO update computes clipped surrogate policy loss, value loss, and entropy loss.
-//    Gradients propagate through actor/critic, shared MLP, and all 1D/2D convolutions.
+//    The selected agent processes either convolutional features or the financial network matrices directly.
 // 2. Test window: Evaluates agent against baseline stock selection (best return over last O days) using baseline buy/sell.
 
 int main() {
@@ -29,7 +33,7 @@ int main() {
 	TradingEnv env;
 	OutputFiles outputFiles(env.getStockNames());
 	PPOConfig config;
-	Agent agent(env.getStocksAmount(), NetworkFeatureExtractor::nodeLevelFeaturesAmount, NetworkFeatureExtractor::linkLevelFeaturesAmount);
+	SelectedAgent agent(env.getStocksAmount(), NetworkFeatureExtractor::nodeLevelFeaturesAmount, NetworkFeatureExtractor::linkLevelFeaturesAmount);
 	Adam optimizer(agent->parameters(), AdamOptions(config.learning_rate).weight_decay(config.weight_decay));
 
 	double testingCash = Config::STARTING_CASH;
@@ -70,18 +74,22 @@ int main() {
 		env.reset(test_start, test_end, testingCash);
 		double start_value = env.portfolio_value();
 		double baseline_money = baselineCash;
-		while (!env.terminated()) {
-			Observation observation = makeObservation(env);
-			ActionOutput output = agent->act(observation, true);
 
-			// Baseline strategy: pick the best performing stock over the last OBS_LEN days and execute buy/sell before env.step()
+		while (!env.terminated()) {
+
+			Observation observation = makeObservation(env);
+
+			vector<double> ppo_action = agent->act(observation, true);
+			vector<double> baseline_same_percent = BaselineCalculator::calculateSamePercentBaseline(observation);
+			vector<double> baselinebest_stock = BaselineCalculator::calculateBestStockBaseline(observation);
+
 			size_t baseline_stock = env.getBestPerformingStock();
 			baseline_money = env.baselineBuyAndSell(baseline_money, baseline_stock);
 
-			env.step(output.weights);
+			env.step(ppo_action.weights);
 
 			outputFiles.result_csv << env.getCurrentDate() << ',' << env.portfolio_value() << ',' << baseline_money;
-			for (double weight : output.weights)
+			for (double weight : ppo_action.weights)
 				outputFiles.result_csv << ',' << weight * 100.0;
 			outputFiles.result_csv << '\n';
 

@@ -12,7 +12,7 @@ using namespace std;
 using namespace torch;
 using namespace torch::nn;
 
-// CONSTANTS USED IN THE SHAPES BELOW ==================================================================================
+// CONSTANTS USED ==================================================================================
 // B  = Batch size (1 when acting, minibatch size when PPO is updating)
 // N  = Number of stocks (amount of assets in the portfolio)
 // F  = Amount of node-level features      (NetworkFeatureExtractor::nodeLevelFeaturesAmount)

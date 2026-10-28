@@ -1,0 +1,2 @@
+WINNER TAKES ALL = FALSE
+Window: 50 - 806 - 1058
